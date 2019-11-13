@@ -181,8 +181,7 @@ for i in range(tamanho_arquivo_teste):
     camada_entrada.le_entrada(arquivo_teste,1,i)
     camada_saida.le_saida_esperada(arquivo_teste, 1, i)
     camada_escondida.atualiza_neuronios(camada_entrada.neuronios)
-    # input()
-
+    
     camada_escondida.update_saida()
 
     # camada_escondida.atualiza_neuronios(camada_escondida.neuronios)
@@ -192,11 +191,8 @@ for i in range(tamanho_arquivo_teste):
 
     camada_saida.update_saida()
     
-    s = [round(camada_saida.neuronios[i].saida,3) for i in range(len(camada_saida.neuronios))]
     print("Saída do teste")
-    print(s)
-    print(','.join([str(i) for i in range(len(camada_saida.neuronios))]))
-    print("\n Saída esperada")
-    print(''.join(camada_saida.saida_esperada))
-    print(','.join([str(i) for i in range(len(camada_saida.saida_esperada))]))
+    camada_saida.print_saida_neuronios()
+    print("Saída esperada")
+    camada_saida.print_saida_esperada_neuronios()
     input()

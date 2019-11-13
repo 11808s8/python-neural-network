@@ -10,7 +10,6 @@ class CamadaSaida(Camada):
         self.saida_esperada = []
     
 
-    # @TODO: ESTE CARA AQUI ESTÁ BUGADO!
     def le_saida_esperada(self, nome_arquivo, quantas_saidas, linha_leitura):
         with open(nome_arquivo, 'r') as arquivo_entrada:
             linha_atual = 0
@@ -29,6 +28,17 @@ class CamadaSaida(Camada):
                 else:
                     linha_atual += 1
                 
+    
+    def print_saida_neuronios(self):
+        saida_formatada = self.__formata_saida_neuronios__()
+        print(''.join(saida_formatada))
+
+    def __formata_saida_neuronios__(self):
+        valor_maximo = max(neuronio.saida for neuronio in self.neuronios)
+        return [ '1' if neuronio.saida >= valor_maximo else '0' for neuronio in self.neuronios ]
+
+    def print_saida_esperada_neuronios(self):
+        print(''.join(self.saida_esperada))
 
 
     def popula_saida_esperada(self, lista_saida_esperada):
