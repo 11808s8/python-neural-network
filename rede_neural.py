@@ -19,11 +19,6 @@ def exibe_neuronios_camada(camada):
                 print("Fator erro: " + str(neuronio.fator_erro))
                 print("Pesos: ")
                 print(neuronio.pesos)
-                # print("Entradas: ")
-                # for neuronio in neuronio.entradas:
-                #         print("Id " + str(neuronio.id) + " Saida: " + str(neuronio.saida))
-                        # for n in neuronios:
-                        #         print(str(n))
 
 def exibe_neuronios_camada_saida(camada):
     for neuronio in camada.neuronios:
@@ -70,20 +65,9 @@ def read_weights_on_file(nome_arquivo_backup):
                 for i in range(len(neuronio['entradas'])):
                     novo_neuronio.entradas.append(Neuronio(neuronio['entradas'][i]['id'],[]))
                     novo_neuronio.pesos.append(neuronio['entradas'][i]['peso'])
-                # if(json_deserializacao[indice_camada]['tipo_camada'] == 'output'):
-                #     print('qtds pessos saisds')
-                #     print(len(novo_neuronio.pesos))
-                #     input()
-                # neuronio_novo.pesos_antigos = neuronio_novo.pesos
-            #     print(neuronio_novo)
                 nova_camada.neuronios.append(novo_neuronio)
             camadas.append(nova_camada)
         
-        # print(json_deserializacao[1])
-        # input()
-        # for camada in camadas:
-        #     print([ n.id for n in camada.neuronios])
-        # input()
         return camadas
 
 epocas = 2001
@@ -96,8 +80,6 @@ checkpoint_counter = 1
 
 linha_arquivo_treino = 0
 total_linhas_arquivo_treino = conta_linhas_arquivo(nome_arquivo_leitura)
-# total_linhas_arquivo_treino = 1
-print(total_linhas_arquivo_treino)
 
 if(settings.le_de_arquivo==True):
     nome_arquivo_backup_pesos = 'backup-rede-neuralzinha-1500.nn'
@@ -109,17 +91,11 @@ if(settings.le_de_arquivo==True):
     camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio)
     camada_escondida.atualiza_neuronios(camada_entrada.neuronios)
     nome_arquivo_backup_pesos_split = nome_arquivo_backup_pesos.split('-')
-    # print(nome_arquivo_backup_pesos_split)
+    
     i = int(nome_arquivo_backup_pesos_split[-1].split('.')[0])
-    print(i)
-    input()
 else:
-    # nome_arquivo_leitura = 'teste_dataset_2_entradas.txt'
-
+    
     camada_entrada = Camada(48)
-
-    # Primeira leitura da camada de entrada não verifica qual linha está lendo
-    # e inicializa os neuronios...
 
     settings.ultimo_id_neuronio = camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio)
 
@@ -131,21 +107,13 @@ else:
     camada_saida = CamadaSaida(quantos_neuronios_camada_saida)
 
     camada_saida.le_saida_esperada(nome_arquivo_leitura,1, linha_arquivo_treino)
-    # print("Saidas esperadas")
-    # for n in camada_saida.saida_esperada:
-    #         print(n)
-    # exit()
-
-
+    
     # LEITURA DA CAMADA ESCONDIDA
     for indice_neuronio_escondido in range(quantos_neuronios_camada_escondida):
         neuronio_novo = Neuronio(settings.ultimo_id_neuronio,[])
 
-        # :
         neuronio_novo.entradas = [ neuronio for neuronio in camada_entrada.neuronios ]
         neuronio_novo.pesos = [ camada_escondida.__gera_peso_aleatorio__() for neuronio in camada_entrada.neuronios ]
-        # neuronio_novo.pesos_antigos = neuronio_novo.pesos
-    #     print(neuronio_novo)
         camada_escondida.neuronios.append(neuronio_novo)
         settings.ultimo_id_neuronio += 1
             # camada_escondida.neuronios.append(neuronio)
@@ -170,9 +138,6 @@ if(settings.somente_testa == False):
             backup_weights_on_file([camada_escondida, camada_saida], ['hidden', 'output'], nome_arquivo_backup)
 
         for linha_arquivo_treino in range(total_linhas_arquivo_treino):
-        # print(i)
-        # input()
-            # if(i>0):
             camada_entrada.le_entrada(nome_arquivo_leitura,1,linha_arquivo_treino)
             camada_saida.le_saida_esperada(nome_arquivo_leitura, 1, linha_arquivo_treino)
             camada_escondida.atualiza_neuronios(camada_entrada.neuronios)
@@ -181,34 +146,20 @@ if(settings.somente_testa == False):
 
             # Calcula as saídas das camadas escondidas
             camada_escondida.update_saida()
-            # for n in camada_escondida.neuronios:
-            #     print(n.saida)
-            #     # for y in n.entradas:
-            #     #     print(y)
-            #     print(n.pesos)
-            #     print(n.pesos_antigos)
-            # exit()
-            # camada_escondida.atualiza_neuronios(camada_escondida.neuronios)
             camada_saida.atualiza_neuronios(camada_escondida.neuronios)
 
             # Calcula as saídas das camadas de saída
             camada_saida.update_saida()
-        #     input()
 
             # Calcula o fator de erro e o erro da camada de saída
             camada_saida.calculo_fator_erro_erro_saida()
             
-
             camada_escondida.atualiza_neuronios(camada_saida.neuronios)
 
             # Calcula o fator de erro e o erro da camada intermediária
             camada_escondida.calculo_fator_erro_erro(camada_saida)
             
-                
-        #     input()
             camada_saida.atualiza_neuronios(camada_escondida.neuronios)
-
-            # exibe_neuronios_camada(camada_escondida)
 
             camada_saida.update_pesos()
             camada_escondida.update_pesos()
@@ -216,32 +167,19 @@ if(settings.somente_testa == False):
         checkpoint_counter += 1
 
 
-        # exibe_neuronios_camada_saida(camada_saida)
         print("Rodou época " + str(i))
         i+=1
 
-    # exit()
 
 
 arquivo_teste = 'dataset_teste.txt'
 #arquivo_teste = 'teste_dataset_2_entradas.txt'
 
 tamanho_arquivo_teste = conta_linhas_arquivo(arquivo_teste)
-# tamanho_arquivo_teste = 1
+
 for i in range(tamanho_arquivo_teste):
     camada_entrada.le_entrada(arquivo_teste,1,i)
     camada_saida.le_saida_esperada(arquivo_teste, 1, i)
-    # neuronio_novo.entradas = 
-    # print("Id neuronios camada de entrada")
-    # for i in range(len(camada_entrada.neuronios)):
-    #     print(camada_entrada.neuronios[i].saida)
-    
-    # print('Neuronios nas camadas escondidas')
-    # for i in range(len(camada_escondida.neuronios)):
-    #     for j in range(len(camada_escondida.neuronios[i].entradas)):
-    #         print(camada_escondida.neuronios[i].entradas[j].saida)
-    #     print("QQ")
-    # input()
     camada_escondida.atualiza_neuronios(camada_entrada.neuronios)
     # input()
 
@@ -258,29 +196,7 @@ for i in range(tamanho_arquivo_teste):
     print("Saída do teste")
     print(s)
     print(','.join([str(i) for i in range(len(camada_saida.neuronios))]))
-#    saida_final_teste = ''
-#    for n in camada_saida.neuronios:
-#        saida_final_teste += ' ' + str(n.saida)
-
-#    print("Saidinha " + saida_final_teste)
     print("\n Saída esperada")
     print(''.join(camada_saida.saida_esperada))
     print(','.join([str(i) for i in range(len(camada_saida.saida_esperada))]))
     input()
-
-exit() 
-
-print("Camada saída")
-for neuronio in camada_saida.neuronios:
-        print("Neuronio: " + str(neuronio.id))
-        print("Entradas: ")
-        print(str(len(neuronio.entradas)))
-        # for neuronio in neuronio.entradas:
-        #         # for n in neuronios:
-        #         print(str(neuronio))
-
-exit()
-
-
-
-
