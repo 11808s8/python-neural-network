@@ -135,7 +135,7 @@ else:
 if(settings.somente_testa == False):
     while(i <epocas):
         if(checkpoint_counter % settings.quanto_em_quanto_faz_checkpoint == 0):
-            nome_arquivo_backup = settings.nome_arquivo_checkpoint  + str(i) + '-lr-' + str(settings.taxa_aprendizagem).replace('.','') + settings.extensao_checkpoint
+            nome_arquivo_backup = settings.nome_arquivo_checkpoint  + str(i) + '-lr-' + str(settings.taxa_aprendizagem).replace('.','') + '-momentum-' + str(settings.momentum) + settings.extensao_checkpoint
             backup_weights_on_file([camada_escondida, camada_saida], ['hidden', 'output'], nome_arquivo_backup)
 
         for linha_arquivo_treino in range(total_linhas_arquivo_treino):
