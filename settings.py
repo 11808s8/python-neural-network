@@ -1,7 +1,6 @@
 
 ultimo_id_neuronio = 0
 
-# quanto_em_quanto_faz_checkpoint = 250
 quanto_em_quanto_faz_checkpoint = 250
 nome_arquivo_checkpoint = 'backup-rede-neuralzinha-'
 extensao_checkpoint = '.nn'
@@ -13,3 +12,6 @@ somente_testa = True
 momentum = 0.9
 
 taxa_aprendizagem = 0.1
+
+def remove_ponto(string):
+    return string.replace('.','')

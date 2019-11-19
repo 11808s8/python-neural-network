@@ -93,7 +93,7 @@ if(settings.le_de_arquivo==True):
     camada_escondida.atualiza_neuronios(camada_entrada.neuronios)
     nome_arquivo_backup_pesos_split = nome_arquivo_backup_pesos.split('-')
     
-    i = int(nome_arquivo_backup_pesos_split[-1].split('.')[0])
+    i = int(nome_arquivo_backup_pesos_split[3])
 else:
     
     camada_entrada = Camada(48)
@@ -135,7 +135,7 @@ else:
 if(settings.somente_testa == False):
     while(i <epocas):
         if(checkpoint_counter % settings.quanto_em_quanto_faz_checkpoint == 0):
-            nome_arquivo_backup = settings.nome_arquivo_checkpoint  + str(i) + '-lr-' + str(settings.taxa_aprendizagem).replace('.','') + '-momentum-' + str(settings.momentum) + settings.extensao_checkpoint
+            nome_arquivo_backup = settings.nome_arquivo_checkpoint  + str(i) + '-lr-' + settings.remove_ponto(str(settings.taxa_aprendizagem)) + '-momentum-' + settings.remove_ponto(str(settings.momentum)) + settings.extensao_checkpoint
             backup_weights_on_file([camada_escondida, camada_saida], ['hidden', 'output'], nome_arquivo_backup)
 
         for linha_arquivo_treino in range(total_linhas_arquivo_treino):
