@@ -3,7 +3,7 @@ import math
 class Neuronio:
     
 
-    def __init__(self,id, entradas ):
+    def __init__(self,id, entradas, learning_rate):
         self.id = id
         self.entradas = entradas # x (vetor)
         self.conexoes = []
@@ -14,7 +14,7 @@ class Neuronio:
         self.erro = 0
         self.fator_erro = 0
         self.momentum = 0.9
-        self.taxa_de_aprendizagem = 0.1
+        self.taxa_de_aprendizagem = learning_rate
 
     def atualiza_entrada_por_id(self, novo_neuronio):
         for i in range(len(self.entradas)):

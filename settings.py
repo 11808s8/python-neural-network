@@ -8,4 +8,6 @@ extensao_checkpoint = '.nn'
 
 le_de_arquivo = True
 
-somente_testa = False
+somente_testa = True
+
+taxa_aprendizagem = 0.1

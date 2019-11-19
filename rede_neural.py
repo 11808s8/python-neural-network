@@ -61,16 +61,16 @@ def read_weights_on_file(nome_arquivo_backup):
             else:
                 nova_camada = Camada(json_deserializacao[indice_camada]['total_neuronios'])
             for neuronio in json_deserializacao[indice_camada]['neuronios']:
-                novo_neuronio = Neuronio(neuronio['id'],[])
+                novo_neuronio = Neuronio(neuronio['id'],[],settings.taxa_aprendizagem)
                 for i in range(len(neuronio['entradas'])):
-                    novo_neuronio.entradas.append(Neuronio(neuronio['entradas'][i]['id'],[]))
+                    novo_neuronio.entradas.append(Neuronio(neuronio['entradas'][i]['id'],[],settings.taxa_aprendizagem))
                     novo_neuronio.pesos.append(neuronio['entradas'][i]['peso'])
                 nova_camada.neuronios.append(novo_neuronio)
             camadas.append(nova_camada)
         
         return camadas
 
-epocas = 2001
+epocas = 3000
 
 nome_arquivo_leitura = 'novoarquivo_com_saida1.txt'
 
@@ -82,13 +82,14 @@ linha_arquivo_treino = 0
 total_linhas_arquivo_treino = conta_linhas_arquivo(nome_arquivo_leitura)
 
 if(settings.le_de_arquivo==True):
-    nome_arquivo_backup_pesos = 'backup-rede-neuralzinha-1500.nn'
+    # nome_arquivo_backup_pesos = 'backup-rede-neuralzinha-2248-lr-01.nn'
+    nome_arquivo_backup_pesos = 'backup-rede-neuralzinha-2248-lr-01.nn'
 
     camadas = read_weights_on_file(nome_arquivo_backup_pesos)
     camada_entrada = Camada(48)
     camada_escondida = camadas[0]
     camada_saida = camadas[1]
-    camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio)
+    camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio, settings.taxa_aprendizagem)
     camada_escondida.atualiza_neuronios(camada_entrada.neuronios)
     nome_arquivo_backup_pesos_split = nome_arquivo_backup_pesos.split('-')
     
@@ -97,7 +98,7 @@ else:
     
     camada_entrada = Camada(48)
 
-    settings.ultimo_id_neuronio = camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio)
+    settings.ultimo_id_neuronio = camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio, settings.taxa_aprendizagem)
 
     quantos_neuronios_camada_escondida = 42
 
@@ -110,7 +111,7 @@ else:
     
     # LEITURA DA CAMADA ESCONDIDA
     for indice_neuronio_escondido in range(quantos_neuronios_camada_escondida):
-        neuronio_novo = Neuronio(settings.ultimo_id_neuronio,[])
+        neuronio_novo = Neuronio(settings.ultimo_id_neuronio,[],settings.taxa_aprendizagem)
 
         neuronio_novo.entradas = [ neuronio for neuronio in camada_entrada.neuronios ]
         neuronio_novo.pesos = [ camada_escondida.__gera_peso_aleatorio__() for neuronio in camada_entrada.neuronios ]
@@ -120,7 +121,7 @@ else:
 
     # LEITURA DA CAMADA DE SAÍDA
     for _ in range(quantos_neuronios_camada_saida):
-            neuronio_novo = Neuronio(settings.ultimo_id_neuronio, [])
+            neuronio_novo = Neuronio(settings.ultimo_id_neuronio, [],settings.taxa_aprendizagem)
             for neuronio in camada_escondida.neuronios:
                     neuronio_novo.entradas.append(neuronio)
                     neuronio_novo.pesos.append(camada_saida.__gera_peso_aleatorio__())
@@ -134,7 +135,7 @@ else:
 if(settings.somente_testa == False):
     while(i <epocas):
         if(checkpoint_counter % settings.quanto_em_quanto_faz_checkpoint == 0):
-            nome_arquivo_backup = settings.nome_arquivo_checkpoint  + str(i) + settings.extensao_checkpoint
+            nome_arquivo_backup = settings.nome_arquivo_checkpoint  + str(i) + '-lr-' + str(settings.taxa_aprendizagem).replace('.','') + settings.extensao_checkpoint
             backup_weights_on_file([camada_escondida, camada_saida], ['hidden', 'output'], nome_arquivo_backup)
 
         for linha_arquivo_treino in range(total_linhas_arquivo_treino):
@@ -177,6 +178,9 @@ arquivo_teste = 'dataset_teste.txt'
 
 tamanho_arquivo_teste = conta_linhas_arquivo(arquivo_teste)
 
+quantos_reconheceu = 0
+quantos_nao_reconheceu = 0
+
 for i in range(tamanho_arquivo_teste):
     camada_entrada.le_entrada(arquivo_teste,1,i)
     camada_saida.le_saida_esperada(arquivo_teste, 1, i)
@@ -195,4 +199,12 @@ for i in range(tamanho_arquivo_teste):
     camada_saida.print_saida_neuronios()
     print("Saída esperada")
     camada_saida.print_saida_esperada_neuronios()
-    input()
+    if(camada_saida.reconheceu_saida()):
+        quantos_reconheceu+=1
+    else:
+        quantos_nao_reconheceu +=1
+    # input()
+
+precisao = (quantos_reconheceu/(quantos_reconheceu+quantos_nao_reconheceu)) * 100
+print("Precisão")
+print(precisao)
