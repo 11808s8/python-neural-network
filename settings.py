@@ -10,4 +10,6 @@ le_de_arquivo = True
 
 somente_testa = True
 
+momentum = 0.9
+
 taxa_aprendizagem = 0.1

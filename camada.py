@@ -11,7 +11,7 @@ class Camada:
 
 
     # Método que lê as entradas e cria os neurônios de acordo
-    def le_camada_entrada(self, nome_arquivo, quantas_entradas, ultimo_id_neuronio, learning_rate):
+    def le_camada_entrada(self, nome_arquivo, quantas_entradas, ultimo_id_neuronio, learning_rate,momentum ):
         with open(nome_arquivo, 'r') as arquivo_leitura_entrada:
             quantos_leu = 0
             for linha in arquivo_leitura_entrada:
@@ -20,7 +20,7 @@ class Camada:
                 # return
                 for i in linha_quebrada[0]: # pega as ENTRADAS somente (desconsidera saída esperada AINDA)
 
-                    n = Neuronio(ultimo_id_neuronio,i, learning_rate) # passando peso -1 como teste apenas
+                    n = Neuronio(ultimo_id_neuronio,i, learning_rate, momentum) # passando peso -1 como teste apenas
                     n.entradas = [float(i)]
                     n.saida = float(i) # coloca entrada na saída para primeira camada
                     self.neuronios.append(n)

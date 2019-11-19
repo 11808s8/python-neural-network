@@ -9,7 +9,7 @@ class Neuronio:
                                                     erro e taxa de aprendizagem
     """
 
-    def __init__(self,id, entradas, learning_rate):
+    def __init__(self,id, entradas, learning_rate, momentum):
         self.id = id
         self.entradas = entradas # x (vetor)
         self.conexoes = []
@@ -19,7 +19,7 @@ class Neuronio:
         self.saida = 0
         self.erro = 0
         self.fator_erro = 0
-        self.momentum = 0.9
+        self.momentum = momentum
         self.taxa_de_aprendizagem = learning_rate
 
     def atualiza_entrada_por_id(self, novo_neuronio):

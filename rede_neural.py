@@ -61,9 +61,9 @@ def read_weights_on_file(nome_arquivo_backup):
             else:
                 nova_camada = Camada(json_deserializacao[indice_camada]['total_neuronios'])
             for neuronio in json_deserializacao[indice_camada]['neuronios']:
-                novo_neuronio = Neuronio(neuronio['id'],[],settings.taxa_aprendizagem)
+                novo_neuronio = Neuronio(neuronio['id'],[],settings.taxa_aprendizagem, settings.momentum)
                 for i in range(len(neuronio['entradas'])):
-                    novo_neuronio.entradas.append(Neuronio(neuronio['entradas'][i]['id'],[],settings.taxa_aprendizagem))
+                    novo_neuronio.entradas.append(Neuronio(neuronio['entradas'][i]['id'],[],settings.taxa_aprendizagem, settings.momentum))
                     novo_neuronio.pesos.append(neuronio['entradas'][i]['peso'])
                 nova_camada.neuronios.append(novo_neuronio)
             camadas.append(nova_camada)
@@ -89,7 +89,7 @@ if(settings.le_de_arquivo==True):
     camada_entrada = Camada(48)
     camada_escondida = camadas[0]
     camada_saida = camadas[1]
-    camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio, settings.taxa_aprendizagem)
+    camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio, settings.taxa_aprendizagem, settings.momentum)
     camada_escondida.atualiza_neuronios(camada_entrada.neuronios)
     nome_arquivo_backup_pesos_split = nome_arquivo_backup_pesos.split('-')
     
@@ -111,7 +111,7 @@ else:
     
     # LEITURA DA CAMADA ESCONDIDA
     for indice_neuronio_escondido in range(quantos_neuronios_camada_escondida):
-        neuronio_novo = Neuronio(settings.ultimo_id_neuronio,[],settings.taxa_aprendizagem)
+        neuronio_novo = Neuronio(settings.ultimo_id_neuronio,[],settings.taxa_aprendizagem, settings.momentum)
 
         neuronio_novo.entradas = [ neuronio for neuronio in camada_entrada.neuronios ]
         neuronio_novo.pesos = [ camada_escondida.__gera_peso_aleatorio__() for neuronio in camada_entrada.neuronios ]
@@ -121,7 +121,7 @@ else:
 
     # LEITURA DA CAMADA DE SAÍDA
     for _ in range(quantos_neuronios_camada_saida):
-            neuronio_novo = Neuronio(settings.ultimo_id_neuronio, [],settings.taxa_aprendizagem)
+            neuronio_novo = Neuronio(settings.ultimo_id_neuronio, [],settings.taxa_aprendizagem, settings.momentum)
             for neuronio in camada_escondida.neuronios:
                     neuronio_novo.entradas.append(neuronio)
                     neuronio_novo.pesos.append(camada_saida.__gera_peso_aleatorio__())
