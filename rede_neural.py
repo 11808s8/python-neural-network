@@ -86,7 +86,7 @@ if(settings.le_de_arquivo==True):
     nome_arquivo_backup_pesos = 'backup-rede-neuralzinha-2248-lr-01.nn'
 
     camadas = read_weights_on_file(nome_arquivo_backup_pesos)
-    camada_entrada = Camada(48)
+    camada_entrada = Camada(settings.quantidade_neuronios_camada_entrada)
     camada_escondida = camadas[0]
     camada_saida = camadas[1]
     camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio, settings.taxa_aprendizagem, settings.momentum)
