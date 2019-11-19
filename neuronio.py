@@ -1,7 +1,13 @@
 import math
 
 class Neuronio:
-    
+    """Classe que define as funcionalidades e atributos de um neurônio.
+        A implementação envolve unidade de somatório, transferência 
+                                        (gera a saída do neurônio)
+        e o cálculo de erro baseado no fator de erro do neurônio.
+        Além disso, há a atualização de pesos com base no cálculo considerando: 
+                                                    erro e taxa de aprendizagem
+    """
 
     def __init__(self,id, entradas, learning_rate):
         self.id = id
