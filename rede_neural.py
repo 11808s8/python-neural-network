@@ -96,15 +96,15 @@ if(settings.le_de_arquivo==True):
     i = int(nome_arquivo_backup_pesos_split[3])
 else:
     
-    camada_entrada = Camada(48)
+    camada_entrada = Camada(settings.quantidade_neuronios_camada_entrada)
 
     settings.ultimo_id_neuronio = camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio, settings.taxa_aprendizagem)
 
-    quantos_neuronios_camada_escondida = 42
+    quantos_neuronios_camada_escondida = settings.quantidade_neuronios_camada_escondida
 
     camada_escondida = Camada(quantos_neuronios_camada_escondida)
 
-    quantos_neuronios_camada_saida = 36
+    quantos_neuronios_camada_saida = settings.quantidade_neuronios_camada_saida
     camada_saida = CamadaSaida(quantos_neuronios_camada_saida)
 
     camada_saida.le_saida_esperada(nome_arquivo_leitura,1, linha_arquivo_treino)
