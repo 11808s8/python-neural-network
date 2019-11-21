@@ -5,7 +5,7 @@ quanto_em_quanto_faz_checkpoint = 250
 nome_arquivo_checkpoint = 'backup-rede-neuralzinha-'
 extensao_checkpoint = '.nn'
 
-le_de_arquivo = False
+le_de_arquivo = True
 
 somente_testa = True
 

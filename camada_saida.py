@@ -27,11 +27,19 @@ class CamadaSaida(Camada):
                         break
                 else:
                     linha_atual += 1
-                
-    
-    def print_saida_neuronios(self):
+              
+    def retorna_saida_esperada_formatada(self):
+        # saida_esperada_formatada = self.__formata_saida_neuronios__()
+        return ''.join(self.saida_esperada)
+
+    def retorna_saida_neuronios_formatada(self):
         saida_formatada = self.__formata_saida_neuronios__()
-        print(''.join(saida_formatada))
+        return ''.join(saida_formatada)
+
+    def print_saida_neuronios(self):
+        # saidinha = [ neuronio.saida for neuronio in self.neuronios]
+        # print(''.join(str(saidinha)))
+        print(self.retorna_saida_neuronios_formatada())
 
     def __formata_saida_neuronios__(self):
         valor_maximo = max(neuronio.saida for neuronio in self.neuronios)

@@ -98,7 +98,7 @@ else:
     
     camada_entrada = Camada(settings.quantidade_neuronios_camada_entrada)
 
-    settings.ultimo_id_neuronio = camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio, settings.taxa_aprendizagem)
+    settings.ultimo_id_neuronio = camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio, settings.taxa_aprendizagem, settings.momentum)
 
     quantos_neuronios_camada_escondida = settings.quantidade_neuronios_camada_escondida
 
@@ -181,6 +181,32 @@ tamanho_arquivo_teste = conta_linhas_arquivo(arquivo_teste)
 quantos_reconheceu = 0
 quantos_nao_reconheceu = 0
 
+classes = {}
+
+with open(nome_arquivo_leitura, 'r') as arquivo_treino:
+    for linha in arquivo_treino:
+        linha_quebrada = linha.split(' ')
+        classes[linha_quebrada[1]] = { 'id' : linha_quebrada[2].replace('\n',''), 'quanto_reconheceu' : 0}
+        
+print(classes)
+classes_avaliacao = {}
+for classe in classes:
+    # classes_avaliacao[] = {'id': classe['id'], 'avaliacao':{}}
+    # print(classes[classe])
+    # exit()
+    classes_avaliacao[classe] = {}
+    classes_avaliacao[classe]['id'] = classes[classe]['id']
+    classes_avaliacao[classe]['avaliacao'] = {}
+    for classe_interna in classes:
+        classes_avaliacao[classe]['avaliacao'][classe_interna] = 0 
+        # classes_avaliacao[classe]['avaliacao']['quanto_reconheceu'] =  0
+    # for classe_interna in classes_avaliacao:
+    # print(json.dumps(classes_avaliacao[classe], indent=4))
+    # input()
+
+# print(classes_avaliacao)
+# print(json.dumps(classes_avaliacao, indent=4))
+# exit()
 for i in range(tamanho_arquivo_teste):
     camada_entrada.le_entrada(arquivo_teste,1,i)
     camada_saida.le_saida_esperada(arquivo_teste, 1, i)
@@ -195,6 +221,14 @@ for i in range(tamanho_arquivo_teste):
 
     camada_saida.update_saida()
     
+    saida_formatada = camada_saida.retorna_saida_neuronios_formatada()
+    saida_esperada_formatada = camada_saida.retorna_saida_esperada_formatada()
+    if(saida_esperada_formatada in classes):
+        print("Classe!")
+        print(classes_avaliacao[saida_formatada]['id'])
+        classes_avaliacao[saida_esperada_formatada]['avaliacao'][saida_formatada]+=1
+        print(classes_avaliacao[saida_esperada_formatada]['avaliacao'][saida_formatada])
+        # input()
     print("Saída do teste")
     camada_saida.print_saida_neuronios()
     print("Saída esperada")
@@ -205,6 +239,58 @@ for i in range(tamanho_arquivo_teste):
         quantos_nao_reconheceu +=1
     # input()
 
+cabecalho = []
+for classe in classes_avaliacao:
+    cabecalho.append(classes_avaliacao[classe]['id'])
+linhas = []
+for classe in classes_avaliacao:
+    linhas.append([])
+    for classe_interna in classes_avaliacao:
+        linhas[len(linhas)-1].append(str(classes_avaliacao[classe]['avaliacao'][classe_interna]))
+print('  ' + ' '.join(cabecalho))
+
+i = 0
+for linha in linhas:
+    linha_formatada = str(cabecalho[i]) + ' ' + ' '.join(linha) 
+    i += 1
+    print(linha_formatada)
+# print(json.dumps(classes_avaliacao, indent=4))
+
+false_positives = []
+true_positives = []
+true_negatives = []
+for linha in range(len(linhas)):
+    
+    fp = 0
+    
+    for coluna in range(len(linhas[linha])):
+        if(linha != coluna):
+            fp+=int(linhas[linha][coluna])
+        if(linha == coluna):
+            true_positives.append(int(linhas[linha][coluna]))
+            tn = 0
+            for i in range(len(linhas)):
+                if(linha != i and coluna != i):
+                    tn+=int(linhas[i][i])
+            true_negatives.append(tn)
+    false_positives.append(fp)
+    # print("Falso positivo primeiro bobao")
+    # print(fp)
+    # input()
+
+false_negatives = []
+for coluna in range(len(linhas)):
+    fn = 0
+    
+    for linha in range(len(linhas[coluna])):
+        if(linha != coluna):
+            fn+=int(linhas[linha][coluna])
+    false_negatives.append(fn)
+
+print(false_positives)
+print(false_negatives)
+print(true_positives)
+print(true_negatives)
 precisao = (quantos_reconheceu/(quantos_reconheceu+quantos_nao_reconheceu)) * 100
 print("Precisão")
 print(precisao)
