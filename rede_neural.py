@@ -3,6 +3,8 @@ from camada_saida import CamadaSaida
 from neuronio import Neuronio
 import settings
 import json
+import numpy as np
+import matplotlib.pyplot as plt
 
 def conta_linhas_arquivo(arquivo):
     with open(arquivo, 'r') as arquivo_contagem_linhas:
@@ -322,3 +324,43 @@ print(erro)
 precisao = (quantos_reconheceu/(quantos_reconheceu+quantos_nao_reconheceu)) * 100
 print("Precisão")
 print(precisao)
+
+y_pos = np.arange(len(cabecalho))
+# performance = [10,8,6,4,2,1]
+fig,((ax1, ax2),(ax3,ax4),(ax5,ax6),(ax7,ax8)) = plt.subplots(4, 2)
+ax1.bar(cabecalho, sensitividades, align='center', alpha=0.5)
+ax2.bar(cabecalho, precisoes, align='center', alpha=0.5)
+ax3.bar(cabecalho, especificidades, align='center', alpha=0.5)
+ax4.bar(cabecalho, fprs, align='center', alpha=0.5)
+ax5.bar(cabecalho, tprs, align='center', alpha=0.5)
+ax6.bar(cabecalho, false_positives, align='center', alpha=0.5)
+ax7.bar(cabecalho, false_negatives, align='center', alpha=0.5)
+ax8.bar(cabecalho, true_positives, align='center', alpha=0.5)
+ax1.xaxis.labelpad = 4
+ax2.xaxis.labelpad = 4
+# plt.xticks(y_pos, cabecalho,rotation='vertical')
+# ax1.xticks(y_pos, cabecalho)
+# ax1.ylabel('Sensitividade')
+ax1.set_title('Sensitividades')
+ax2.set_title('Precisões')
+ax3.set_title('Especificidades')
+ax4.set_title('False Positive Rates')
+ax5.set_title('True Positive Rates')
+ax6.set_title('False Positives')
+ax7.set_title('False Negatives')
+ax8.set_title('True Positives')
+fig.add_subplot(ax1)
+fig.add_subplot(ax2)
+fig.add_subplot(ax3)
+fig.add_subplot(ax4)
+fig.add_subplot(ax5)
+fig.add_subplot(ax6)
+fig.add_subplot(ax7)
+fig.add_subplot(ax8)
+fig.set_size_inches(12,20)
+fig.savefig('teste.png')
+# fig = plt.gcf()
+# matplotlib.pypl
+# ot.show()
+# plt.subplots_adjust(hspace=0.41,top=0.94,bottom=0.05)
+# plt.show(block=True)
