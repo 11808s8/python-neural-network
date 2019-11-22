@@ -259,6 +259,12 @@ for linha in linhas:
 false_positives = []
 true_positives = []
 true_negatives = []
+sensitividades = []
+fprs = []
+tprs = []
+precisoes = []
+especificidades = []
+
 for linha in range(len(linhas)):
     
     fp = 0
@@ -286,11 +292,33 @@ for coluna in range(len(linhas)):
         if(linha != coluna):
             fn+=int(linhas[linha][coluna])
     false_negatives.append(fn)
-
+for i in range(len(linhas)):
+    sensitividades.append(int(true_positives[i])/(int(true_positives[i])+int(false_negatives[i])))
+    tprs.append(sensitividades[-1])
+    fprs.append(int(false_positives[i])/(int(false_positives[i])+int(true_negatives[i])))
+    precisoes.append(int(true_positives[i])/(int(true_positives[i])+int(false_positives[i])))
+    especificidades.append(int(true_negatives[i])/(int(true_negatives[i])+int(false_positives[i])))
 print(false_positives)
 print(false_negatives)
 print(true_positives)
 print(true_negatives)
+print("Sensitividades")
+print(sensitividades)
+print("Precisões")
+print(precisoes)
+print("Especificidades")
+print(especificidades)
+print("TPRS")
+print(tprs)
+print("FPRS")
+print(fprs)
+# acuracia = (VP+VN)/(VP+FP+VN+FN)
+acuracia = (sum(true_positives)+sum(true_negatives))/(sum(true_positives)+sum(false_positives)+sum(true_negatives)+sum(false_negatives))
+erro = 1 - acuracia
+print("Acuracia")
+print(acuracia)
+print("Erro")
+print(erro)
 precisao = (quantos_reconheceu/(quantos_reconheceu+quantos_nao_reconheceu)) * 100
 print("Precisão")
 print(precisao)
