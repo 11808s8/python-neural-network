@@ -3,7 +3,8 @@ from camada_saida import CamadaSaida
 from neuronio import Neuronio
 import settings
 import json
-import numpy as np
+import time
+
 import matplotlib.pyplot as plt
 
 def conta_linhas_arquivo(arquivo):
@@ -83,9 +84,12 @@ checkpoint_counter = 1
 linha_arquivo_treino = 0
 total_linhas_arquivo_treino = conta_linhas_arquivo(nome_arquivo_leitura)
 
+nome_arquivo_backup_pesos_sem_extensao = ''
+
 if(settings.le_de_arquivo==True):
     # nome_arquivo_backup_pesos = 'backup-rede-neuralzinha-2248-lr-01.nn'
-    nome_arquivo_backup_pesos = 'backup-rede-neuralzinha-2248-lr-01.nn'
+    nome_arquivo_backup_pesos_sem_extensao = 'backup-rede-neuralzinha-2248-lr-01'
+    nome_arquivo_backup_pesos = nome_arquivo_backup_pesos_sem_extensao +'.nn'
 
     camadas = read_weights_on_file(nome_arquivo_backup_pesos)
     camada_entrada = Camada(settings.quantidade_neuronios_camada_entrada)
@@ -242,21 +246,32 @@ for i in range(tamanho_arquivo_teste):
     # input()
 
 cabecalho = []
-for classe in classes_avaliacao:
-    cabecalho.append(classes_avaliacao[classe]['id'])
+
+cabecalho = [ classes_avaliacao[classe]['id'] for classe in classes_avaliacao ]
+cabecalho.sort()
+
+# input()
+# print(cabecalho)
+# input()
 linhas = []
 for classe in classes_avaliacao:
     linhas.append([])
     for classe_interna in classes_avaliacao:
         linhas[len(linhas)-1].append(str(classes_avaliacao[classe]['avaliacao'][classe_interna]))
-print('  ' + ' '.join(cabecalho))
+# print()
+
+with open('matriz_confusao.txt', 'w') as arquivo_escrita:
+    arquivo_escrita.write('    ' + ' '.join(cabecalho) + '\n')
+    arquivo_escrita.write('    ' + ' '.join([ '-' for i in range(len(cabecalho))]) + '\n')
+    pass
 
 i = 0
 for linha in linhas:
-    linha_formatada = str(cabecalho[i]) + ' ' + ' '.join(linha) 
+    linha_formatada = str(cabecalho[i]) + ' | ' + ' '.join(linha)  + '\n'
     i += 1
-    print(linha_formatada)
-# print(json.dumps(classes_avaliacao, indent=4))
+    with open('matriz_confusao.txt', 'a') as arquivo_escrita:
+        arquivo_escrita.write(linha_formatada)
+
 
 false_positives = []
 true_positives = []
@@ -325,7 +340,7 @@ precisao = (quantos_reconheceu/(quantos_reconheceu+quantos_nao_reconheceu)) * 10
 print("Precisão")
 print(precisao)
 
-y_pos = np.arange(len(cabecalho))
+# y_pos = np.arange(len(cabecalho))
 # performance = [10,8,6,4,2,1]
 fig,((ax1, ax2),(ax3,ax4),(ax5,ax6),(ax7,ax8)) = plt.subplots(4, 2)
 ax1.bar(cabecalho, sensitividades, align='center', alpha=0.5)
@@ -358,7 +373,9 @@ fig.add_subplot(ax6)
 fig.add_subplot(ax7)
 fig.add_subplot(ax8)
 fig.set_size_inches(12,20)
-fig.savefig('teste.png')
+
+nome_figura = 'output/images/' + nome_arquivo_backup_pesos_sem_extensao + time.strftime("%Y%m%d-%H%M%S") + '.png'
+fig.savefig(nome_figura)
 # fig = plt.gcf()
 # matplotlib.pypl
 # ot.show()
