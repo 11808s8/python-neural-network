@@ -72,106 +72,124 @@ def read_weights_on_file(nome_arquivo_backup):
         
         return camadas
 
-epocas = 3000
+epocas = 1000
 
 nome_arquivo_leitura = 'novoarquivo_com_saida1.txt'
 
-settings.ultimo_id_neuronio = 0 
 
-checkpoint_counter = 1 
 
-linha_arquivo_treino = 0
+settings.quantidade_neuronios_camada_saida = 36
+settings.quantidade_neuronios_camada_entrada = 48
+
+taxas_aprendizagem = [0.1, 0.3, 0.6, 1]
+quantidades_neuronio_camada_escondida = [ 10, 20, 30]
+
 total_linhas_arquivo_treino = conta_linhas_arquivo(nome_arquivo_leitura)
 
-if(settings.le_de_arquivo==True):
-    # nome_arquivo_backup_pesos = 'backup-rede-neuralzinha-2248-lr-01.nn'
-    nome_arquivo_backup_pesos = 'backup-rede-neuralzinha-2248-lr-01.nn'
 
-    camadas = read_weights_on_file(nome_arquivo_backup_pesos)
-    camada_entrada = Camada(settings.quantidade_neuronios_camada_entrada)
-    camada_escondida = camadas[0]
-    camada_saida = camadas[1]
-    camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio, settings.taxa_aprendizagem, settings.momentum)
-    camada_escondida.atualiza_neuronios(camada_entrada.neuronios)
-    nome_arquivo_backup_pesos_split = nome_arquivo_backup_pesos.split('-')
-    
-    i = int(nome_arquivo_backup_pesos_split[3])
-else:
-    
-    camada_entrada = Camada(settings.quantidade_neuronios_camada_entrada)
+for indice_array_neuronios_camada_escondida in  range(len(quantidades_neuronio_camada_escondida)):
+    for indice_array_taxas_aprendizagem in range(len(taxas_aprendizagem)):
+        checkpoint_counter = 1 
 
-    settings.ultimo_id_neuronio = camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio, settings.taxa_aprendizagem, settings.momentum)
+        settings.taxa_aprendizagem = taxas_aprendizagem[indice_array_taxas_aprendizagem]
+        settings.ultimo_id_neuronio = 0 
+        settings.quantidade_neuronios_camada_escondida = quantidades_neuronio_camada_escondida[indice_array_neuronios_camada_escondida]
 
-    quantos_neuronios_camada_escondida = settings.quantidade_neuronios_camada_escondida
+        linha_arquivo_treino = 0
+        i=0
+        if(settings.le_de_arquivo==True):
+            # nome_arquivo_backup_pesos = 'backup-rede-neuralzinha-2248-lr-01.nn'
+            nome_arquivo_backup_pesos = 'backup-rede-neuralzinha-2248-lr-01.nn'
 
-    camada_escondida = Camada(quantos_neuronios_camada_escondida)
-
-    quantos_neuronios_camada_saida = settings.quantidade_neuronios_camada_saida
-    camada_saida = CamadaSaida(quantos_neuronios_camada_saida)
-
-    camada_saida.le_saida_esperada(nome_arquivo_leitura,1, linha_arquivo_treino)
-    
-    # LEITURA DA CAMADA ESCONDIDA
-    for indice_neuronio_escondido in range(quantos_neuronios_camada_escondida):
-        neuronio_novo = Neuronio(settings.ultimo_id_neuronio,[],settings.taxa_aprendizagem, settings.momentum)
-
-        neuronio_novo.entradas = [ neuronio for neuronio in camada_entrada.neuronios ]
-        neuronio_novo.pesos = [ camada_escondida.__gera_peso_aleatorio__() for neuronio in camada_entrada.neuronios ]
-        camada_escondida.neuronios.append(neuronio_novo)
-        settings.ultimo_id_neuronio += 1
-            # camada_escondida.neuronios.append(neuronio)
-
-    # LEITURA DA CAMADA DE SAÍDA
-    for _ in range(quantos_neuronios_camada_saida):
-            neuronio_novo = Neuronio(settings.ultimo_id_neuronio, [],settings.taxa_aprendizagem, settings.momentum)
-            for neuronio in camada_escondida.neuronios:
-                    neuronio_novo.entradas.append(neuronio)
-                    neuronio_novo.pesos.append(camada_saida.__gera_peso_aleatorio__())
-                    # neuronio_novo.pesos_antigos.append(neuronio_novo.pesos[-1])
-            camada_saida.neuronios.append(neuronio_novo)
-            settings.ultimo_id_neuronio += 1
-
-
-
-# TREINAMENTO EM ORDEM DO PDF...
-if(settings.somente_testa == False):
-    while(i <epocas):
-        if(checkpoint_counter % settings.quanto_em_quanto_faz_checkpoint == 0):
-            nome_arquivo_backup = settings.nome_arquivo_checkpoint  + str(i) + '-lr-' + settings.remove_ponto(str(settings.taxa_aprendizagem)) + '-momentum-' + settings.remove_ponto(str(settings.momentum)) + settings.extensao_checkpoint
-            backup_weights_on_file([camada_escondida, camada_saida], ['hidden', 'output'], nome_arquivo_backup)
-
-        for linha_arquivo_treino in range(total_linhas_arquivo_treino):
-            camada_entrada.le_entrada(nome_arquivo_leitura,1,linha_arquivo_treino)
-            camada_saida.le_saida_esperada(nome_arquivo_leitura, 1, linha_arquivo_treino)
+            camadas = read_weights_on_file(nome_arquivo_backup_pesos)
+            camada_entrada = Camada(settings.quantidade_neuronios_camada_entrada)
+            camada_escondida = camadas[0]
+            camada_saida = camadas[1]
+            camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio, settings.taxa_aprendizagem, settings.momentum)
             camada_escondida.atualiza_neuronios(camada_entrada.neuronios)
-            # camada_escondida.atualiza_neuronios(camada_saida.neuronios)
-            camada_saida.atualiza_neuronios(camada_escondida.neuronios)
-
-            # Calcula as saídas das camadas escondidas
-            camada_escondida.update_saida()
-            camada_saida.atualiza_neuronios(camada_escondida.neuronios)
-
-            # Calcula as saídas das camadas de saída
-            camada_saida.update_saida()
-
-            # Calcula o fator de erro e o erro da camada de saída
-            camada_saida.calculo_fator_erro_erro_saida()
+            nome_arquivo_backup_pesos_split = nome_arquivo_backup_pesos.split('-')
             
-            camada_escondida.atualiza_neuronios(camada_saida.neuronios)
-
-            # Calcula o fator de erro e o erro da camada intermediária
-            camada_escondida.calculo_fator_erro_erro(camada_saida)
+            i = int(nome_arquivo_backup_pesos_split[3])
+        else:
             
-            camada_saida.atualiza_neuronios(camada_escondida.neuronios)
+            camada_entrada = Camada(settings.quantidade_neuronios_camada_entrada)
 
-            camada_saida.update_pesos()
-            camada_escondida.update_pesos()
+            settings.ultimo_id_neuronio = camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio, settings.taxa_aprendizagem, settings.momentum)
 
-        checkpoint_counter += 1
+            quantos_neuronios_camada_escondida = settings.quantidade_neuronios_camada_escondida
+
+            camada_escondida = Camada(quantos_neuronios_camada_escondida)
+
+            quantos_neuronios_camada_saida = settings.quantidade_neuronios_camada_saida
+            camada_saida = CamadaSaida(quantos_neuronios_camada_saida)
+
+            camada_saida.le_saida_esperada(nome_arquivo_leitura,1, linha_arquivo_treino)
+            
+            # LEITURA DA CAMADA ESCONDIDA
+            for indice_neuronio_escondido in range(quantos_neuronios_camada_escondida):
+                neuronio_novo = Neuronio(settings.ultimo_id_neuronio,[],settings.taxa_aprendizagem, settings.momentum)
+
+                neuronio_novo.entradas = [ neuronio for neuronio in camada_entrada.neuronios ]
+                neuronio_novo.pesos = [ camada_escondida.__gera_peso_aleatorio__() for neuronio in camada_entrada.neuronios ]
+                camada_escondida.neuronios.append(neuronio_novo)
+                settings.ultimo_id_neuronio += 1
+                    # camada_escondida.neuronios.append(neuronio)
+
+            # LEITURA DA CAMADA DE SAÍDA
+            for _ in range(quantos_neuronios_camada_saida):
+                    neuronio_novo = Neuronio(settings.ultimo_id_neuronio, [],settings.taxa_aprendizagem, settings.momentum)
+                    for neuronio in camada_escondida.neuronios:
+                            neuronio_novo.entradas.append(neuronio)
+                            neuronio_novo.pesos.append(camada_saida.__gera_peso_aleatorio__())
+                            # neuronio_novo.pesos_antigos.append(neuronio_novo.pesos[-1])
+                    camada_saida.neuronios.append(neuronio_novo)
+                    settings.ultimo_id_neuronio += 1
+
+        print('Rodando treinamento para')
+        print('taxa de aprendizagem: ' + str(settings.taxa_aprendizagem))
+        print('neuronios camada escondida: ' + str(settings.quantidade_neuronios_camada_escondida))
+        settings.ultimo_id_neuronio = 0 
+        
+
+        # TREINAMENTO EM ORDEM DO PDF...
+        if(settings.somente_testa == False):
+            while(i <epocas):
+                if(checkpoint_counter % settings.quanto_em_quanto_faz_checkpoint == 0):
+                    nome_arquivo_backup = './backups/' + settings.nome_arquivo_checkpoint  + str(i) + '-lr-' + settings.remove_ponto(str(settings.taxa_aprendizagem)) + '-momentum-' + settings.remove_ponto(str(settings.momentum)) + '-neurons-' + str(settings.quantidade_neuronios_camada_escondida) + settings.extensao_checkpoint
+                    backup_weights_on_file([camada_escondida, camada_saida], ['hidden', 'output'], nome_arquivo_backup)
+
+                for linha_arquivo_treino in range(total_linhas_arquivo_treino):
+                    camada_entrada.le_entrada(nome_arquivo_leitura,1,linha_arquivo_treino)
+                    camada_saida.le_saida_esperada(nome_arquivo_leitura, 1, linha_arquivo_treino)
+                    camada_escondida.atualiza_neuronios(camada_entrada.neuronios)
+                    # camada_escondida.atualiza_neuronios(camada_saida.neuronios)
+                    camada_saida.atualiza_neuronios(camada_escondida.neuronios)
+
+                    # Calcula as saídas das camadas escondidas
+                    camada_escondida.update_saida()
+                    camada_saida.atualiza_neuronios(camada_escondida.neuronios)
+
+                    # Calcula as saídas das camadas de saída
+                    camada_saida.update_saida()
+
+                    # Calcula o fator de erro e o erro da camada de saída
+                    camada_saida.calculo_fator_erro_erro_saida()
+                    
+                    camada_escondida.atualiza_neuronios(camada_saida.neuronios)
+
+                    # Calcula o fator de erro e o erro da camada intermediária
+                    camada_escondida.calculo_fator_erro_erro(camada_saida)
+                    
+                    camada_saida.atualiza_neuronios(camada_escondida.neuronios)
+
+                    camada_saida.update_pesos()
+                    camada_escondida.update_pesos()
+
+                checkpoint_counter += 1
 
 
-        print("Rodou época " + str(i))
-        i+=1
+                print("Rodou época " + str(i))
+                i+=1
 
 
 
