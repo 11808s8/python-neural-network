@@ -1,5 +1,9 @@
 import random
 
+''' Script que lê  um arquivo com as entradas codificadas e gera o 
+    dataset de teste com base no arquivo lido.
+'''
+
 def funcao_escreve_arquivo_novo_sem_letra_identificando():
     with open('novoarquivo_com_saida.txt','w') as arquivo_escrita:
         with open('codificacao_sem_letras.txt') as f:
