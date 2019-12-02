@@ -5,9 +5,12 @@ quanto_em_quanto_faz_checkpoint = 250
 nome_arquivo_checkpoint = 'backup-rede-neuralzinha-'
 extensao_checkpoint = '.nn'
 
-le_de_arquivo = False
+nome_arquivo_backup_pesos_sem_extensao = 'backup-rede-neuralzinha-2248-lr-01'
+nome_arquivo_backup_pesos = './backups/old_backups/' + nome_arquivo_backup_pesos_sem_extensao + '.nn'
 
-somente_testa = False
+le_de_arquivo = True
+
+somente_testa = True
 
 momentum = 0.9
 

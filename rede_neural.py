@@ -100,7 +100,7 @@ for indice_array_neuronios_camada_escondida in  range(len(quantidades_neuronio_c
         i=0
         if(settings.le_de_arquivo==True):
             # nome_arquivo_backup_pesos = 'backup-rede-neuralzinha-2248-lr-01.nn'
-            nome_arquivo_backup_pesos = 'backup-rede-neuralzinha-2248-lr-01.nn'
+            nome_arquivo_backup_pesos = settings.nome_arquivo_backup_pesos
 
             camadas = read_weights_on_file(nome_arquivo_backup_pesos)
             camada_entrada = Camada(settings.quantidade_neuronios_camada_entrada)
@@ -325,11 +325,25 @@ for coluna in range(len(linhas)):
             fn+=int(linhas[linha][coluna])
     false_negatives.append(fn)
 for i in range(len(linhas)):
-    sensitividades.append(int(true_positives[i])/(int(true_positives[i])+int(false_negatives[i])))
+    # print(cabecalho[i])
+    # print(str((int(true_positives[i]))))
+    # print(str(int(false_negatives[i])))
+    # input()
+    if((int(true_positives[i])+int(false_negatives[i]))==0):
+        sensitividades.append(-1)    
+    else:
+        sensitividades.append(int(true_positives[i])/(int(true_positives[i])+int(false_negatives[i])))
+    if((int(false_positives[i])+int(true_negatives[i]))==0):
+        fprs.append(1)
+    else:
+        fprs.append(int(false_positives[i])/(int(false_positives[i])+int(true_negatives[i])))
     tprs.append(sensitividades[-1])
-    fprs.append(int(false_positives[i])/(int(false_positives[i])+int(true_negatives[i])))
+    
     precisoes.append(int(true_positives[i])/(int(true_positives[i])+int(false_positives[i])))
     especificidades.append(int(true_negatives[i])/(int(true_negatives[i])+int(false_positives[i])))
+
+tprs, fprs =  (list(t) for t in zip(*sorted(zip(tprs, fprs))))
+
 print(false_positives)
 print(false_negatives)
 print(true_positives)
@@ -357,7 +371,13 @@ print(precisao)
 
 # y_pos = np.arange(len(cabecalho))
 # performance = [10,8,6,4,2,1]
-fig,((ax1, ax2),(ax3,ax4),(ax5,ax6),(ax7,ax8)) = plt.subplots(4, 2)
+
+# plt.plot(fpr,tpr,label="data 1, auc="+str(auc))
+# plt.legend(loc=4)
+# plt.show()
+
+
+fig,((ax1, ax2),(ax3,ax4),(ax5,ax6),(ax7,ax8), (ax9, ax10)) = plt.subplots(5, 2)
 ax1.bar(cabecalho, sensitividades, align='center', alpha=0.5)
 ax2.bar(cabecalho, precisoes, align='center', alpha=0.5)
 ax3.bar(cabecalho, especificidades, align='center', alpha=0.5)
@@ -366,6 +386,7 @@ ax5.bar(cabecalho, tprs, align='center', alpha=0.5)
 ax6.bar(cabecalho, false_positives, align='center', alpha=0.5)
 ax7.bar(cabecalho, false_negatives, align='center', alpha=0.5)
 ax8.bar(cabecalho, true_positives, align='center', alpha=0.5)
+ax9.plot(fprs,tprs)
 ax1.xaxis.labelpad = 4
 ax2.xaxis.labelpad = 4
 # plt.xticks(y_pos, cabecalho,rotation='vertical')
@@ -387,9 +408,10 @@ fig.add_subplot(ax5)
 fig.add_subplot(ax6)
 fig.add_subplot(ax7)
 fig.add_subplot(ax8)
+fig.add_subplot(ax9)
 fig.set_size_inches(12,20)
 
-nome_figura = 'output/images/' + nome_arquivo_backup_pesos_sem_extensao + time.strftime("%Y%m%d-%H%M%S") + '.png'
+nome_figura = 'output/images/' + settings.nome_arquivo_backup_pesos_sem_extensao + time.strftime("%Y%m%d-%H%M%S") + '.png'
 fig.savefig(nome_figura)
 # fig = plt.gcf()
 # matplotlib.pypl
