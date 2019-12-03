@@ -247,7 +247,8 @@ for i in range(tamanho_arquivo_teste):
     if(saida_esperada_formatada in classes):
         print("Classe!")
         print(classes_avaliacao[saida_formatada]['id'])
-        classes_avaliacao[saida_esperada_formatada]['avaliacao'][saida_formatada]+=1
+        # classes_avaliacao[saida_esperada_formatada]['avaliacao'][saida_formatada]+=1
+        classes_avaliacao[saida_formatada]['avaliacao'][saida_esperada_formatada]+=1
         print(classes_avaliacao[saida_esperada_formatada]['avaliacao'][saida_formatada])
         # input()
     print("Saída do teste")
@@ -296,31 +297,60 @@ fprs = []
 tprs = []
 precisoes = []
 especificidades = []
-
+ja_foram = []
 for linha in range(len(linhas)):
     
     fp = 0
     
     for coluna in range(len(linhas[linha])):
-        if(linha != coluna):
-            fp+=int(linhas[linha][coluna])
+        
+            # ja_foram.append((linha, coluna))
         if(linha == coluna):
             true_positives.append(int(linhas[linha][coluna]))
-            tn = 0
-            for i in range(len(linhas)):
-                if(linha != i and coluna != i):
-                    tn+=int(linhas[i][i])
-            true_negatives.append(tn)
-    false_positives.append(fp)
+            # ja_foram.append((linha, coluna))
+        #     tn = 0
+        #     for i in range(len(linhas)):
+        #         if(linha != i and coluna != i):
+        #             tn+=int(linhas[i][i])
+        #     true_negatives.append(tn)
+
+    # if(linha == coluna):
+        # true_positives.append(int(linhas[linha][coluna]))
+        # tn = 0
+        # for i in range(len(linhas)):
+        #     if(linha != i and coluna != i):
+        #         tn+=int(linhas[i][i])
+        # true_negatives.append(tn)
+
+    # false_positives.append(fp)
     # print("Falso positivo primeiro bobao")
     # print(fp)
     # input()
 
-false_negatives = []
 for coluna in range(len(linhas)):
+    fp = 0
+    for linha in range(len(linhas[coluna])):
+        if(linha != coluna):
+            fp+=int(linhas[linha][coluna])
+    false_positives.append(fp)
+for linha in range(len(linhas)):
+
+    # for coluna in range(len(linhas[linha])):
+    tn = 0
+    for linha_2 in range(len(linhas[linha])):
+        for coluna_2 in range(len(linhas[linha])):
+            if(linha_2 != linha and coluna_2 != linha):
+                tn+=int(linhas[linha_2][coluna_2])
+        # if(linha!=coluna):
+    true_negatives.append(tn)
+
+# print(true_negatives)
+# input()
+false_negatives = []
+for linha in range(len(linhas)):
     fn = 0
     
-    for linha in range(len(linhas[coluna])):
+    for coluna in range(len(linhas[coluna])):
         if(linha != coluna):
             fn+=int(linhas[linha][coluna])
     false_negatives.append(fn)
@@ -330,20 +360,24 @@ for i in range(len(linhas)):
     # print(str(int(false_negatives[i])))
     # input()
     if((int(true_positives[i])+int(false_negatives[i]))==0):
-        sensitividades.append(-1)    
+        sensitividades.append(0)    
     else:
         sensitividades.append(int(true_positives[i])/(int(true_positives[i])+int(false_negatives[i])))
     if((int(false_positives[i])+int(true_negatives[i]))==0):
-        fprs.append(1)
+        fprs.append(0)
     else:
         fprs.append(int(false_positives[i])/(int(false_positives[i])+int(true_negatives[i])))
     tprs.append(sensitividades[-1])
     
     precisoes.append(int(true_positives[i])/(int(true_positives[i])+int(false_positives[i])))
     especificidades.append(int(true_negatives[i])/(int(true_negatives[i])+int(false_positives[i])))
-
-tprs, fprs =  (list(t) for t in zip(*sorted(zip(tprs, fprs))))
-
+    # fprs.append(especificidades[-1])
+# print(tprs)
+# print(fprs)
+tprs_grafico, fprs_grafico =  (list(t) for t in zip(*sorted(zip(tprs, fprs))))
+# print(tprs)
+# print(fprs)
+# input()
 print(false_positives)
 print(false_negatives)
 print(true_positives)
@@ -365,9 +399,9 @@ print("Acuracia")
 print(acuracia)
 print("Erro")
 print(erro)
-precisao = (quantos_reconheceu/(quantos_reconheceu+quantos_nao_reconheceu)) * 100
-print("Precisão")
-print(precisao)
+# precisao = (quantos_reconheceu/(quantos_reconheceu+quantos_nao_reconheceu)) * 100
+# print("Precisão")
+# print(precisao)
 
 # y_pos = np.arange(len(cabecalho))
 # performance = [10,8,6,4,2,1]
@@ -386,7 +420,8 @@ ax5.bar(cabecalho, tprs, align='center', alpha=0.5)
 ax6.bar(cabecalho, false_positives, align='center', alpha=0.5)
 ax7.bar(cabecalho, false_negatives, align='center', alpha=0.5)
 ax8.bar(cabecalho, true_positives, align='center', alpha=0.5)
-ax9.plot(fprs,tprs)
+ax9.bar(cabecalho, true_negatives, align='center', alpha=0.5)
+ax10.plot(fprs_grafico,tprs_grafico)
 ax1.xaxis.labelpad = 4
 ax2.xaxis.labelpad = 4
 # plt.xticks(y_pos, cabecalho,rotation='vertical')
@@ -400,6 +435,8 @@ ax5.set_title('True Positive Rates')
 ax6.set_title('False Positives')
 ax7.set_title('False Negatives')
 ax8.set_title('True Positives')
+ax9.set_title('True Negatives')
+ax10.set_title('ROC Curve')
 fig.add_subplot(ax1)
 fig.add_subplot(ax2)
 fig.add_subplot(ax3)
@@ -409,6 +446,7 @@ fig.add_subplot(ax6)
 fig.add_subplot(ax7)
 fig.add_subplot(ax8)
 fig.add_subplot(ax9)
+fig.add_subplot(ax10)
 fig.set_size_inches(12,20)
 
 nome_figura = 'output/images/' + settings.nome_arquivo_backup_pesos_sem_extensao + time.strftime("%Y%m%d-%H%M%S") + '.png'
