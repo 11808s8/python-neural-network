@@ -247,7 +247,8 @@ for i in range(tamanho_arquivo_teste):
     if(saida_esperada_formatada in classes):
         print("Classe!")
         print(classes_avaliacao[saida_formatada]['id'])
-        classes_avaliacao[saida_esperada_formatada]['avaliacao'][saida_formatada]+=1
+        # classes_avaliacao[saida_esperada_formatada]['avaliacao'][saida_formatada]+=1
+        classes_avaliacao[saida_formatada]['avaliacao'][saida_esperada_formatada]+=1
         print(classes_avaliacao[saida_esperada_formatada]['avaliacao'][saida_formatada])
         # input()
     print("Saída do teste")
