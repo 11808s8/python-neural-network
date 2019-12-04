@@ -4,7 +4,10 @@ from camada import Camada
 import random
 
 class CamadaSaida(Camada):
-
+    '''Camada que herda as funcionalidades de uma camada comum,
+        mas possui especificidades da camada de saída, como:
+            Leitura de saída esperada
+    '''
     def __init__(self, quantos_neuronios):
         super(CamadaSaida, self).__init__(quantos_neuronios)
         self.saida_esperada = []
@@ -29,7 +32,6 @@ class CamadaSaida(Camada):
                     linha_atual += 1
               
     def retorna_saida_esperada_formatada(self):
-        # saida_esperada_formatada = self.__formata_saida_neuronios__()
         return ''.join(self.saida_esperada)
 
     def retorna_saida_neuronios_formatada(self):
@@ -37,8 +39,6 @@ class CamadaSaida(Camada):
         return ''.join(saida_formatada)
 
     def print_saida_neuronios(self):
-        # saidinha = [ neuronio.saida for neuronio in self.neuronios]
-        # print(''.join(str(saidinha)))
         print(self.retorna_saida_neuronios_formatada())
 
     def __formata_saida_neuronios__(self):
