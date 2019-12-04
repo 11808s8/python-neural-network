@@ -105,3 +105,14 @@ class Camada:
         for i in range(len(self.neuronios)):
             self.neuronios[i].summation_unit()
             self.neuronios[i].transfer_function()
+
+    def retorna_saida_neuronios_formatada(self):
+        saida_formatada = self.__formata_saida_neuronios__()
+        return ''.join(saida_formatada)
+
+    def print_saida_neuronios(self):
+        print(self.retorna_saida_neuronios_formatada())
+
+    def __formata_saida_neuronios__(self):
+        valor_maximo = max(neuronio.saida for neuronio in self.neuronios)
+        return [ '1' if neuronio.saida >= valor_maximo else '0' for neuronio in self.neuronios ]
