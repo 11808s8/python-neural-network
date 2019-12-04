@@ -194,6 +194,8 @@ for indice_array_neuronios_camada_escondida in  range(len(settings.quantidades_n
         break
     print("Execução finalizada")
 
+linhas = None
+
 if(settings.somente_treina==False):
 
     arquivo_teste = settings.arquivo_teste
@@ -255,13 +257,12 @@ if(settings.somente_treina==False):
             quantos_nao_reconheceu +=1
         # input()
 
-    if(settings.gera_graficos):
+    
         cabecalho = []
 
         cabecalho = [ classes_avaliacao[classe]['id'] for classe in classes_avaliacao ]
         # cabecalho.sort()
-        print(cabecalho)
-        print()
+        
         linhas = []
         cabecalhos = []
         for classe in classes_avaliacao:
@@ -277,11 +278,7 @@ if(settings.somente_treina==False):
             # for j in range(len(linhas[i])):
             cabecalhos[i], linhas[i] =  (list(t) for t in zip(*sorted(zip(cabecalhos[i], linhas[i]))))
         cabecalho, linhas =  (list(t) for t in zip(*sorted(zip(cabecalho, linhas))))
-        print(cabecalho)
-        # print(linhas[-1])
-        input()
-        # print()
-        # cabecalho, linhas =  (list(t) for t in zip(*sorted(zip(cabecalho, linhas))))
+        
 
         with open(settings.arquivo_matriz_confusao, 'w') as arquivo_escrita:
             arquivo_escrita.write('    ' + ' '.join(cabecalho) + '\n')
@@ -296,6 +293,24 @@ if(settings.somente_treina==False):
                 arquivo_escrita.write(linha_formatada)
 
 
+if(settings.gera_graficos):
+        if(linhas==None):
+            linhas = []
+            if(not settings.debug):
+                nome_arquivo_matriz_confusao = input("Digite o nome do arquivo da matriz de confusão que deseja ler:")
+            else:
+                nome_arquivo_matriz_confusao = 'cm-backup-rede-neuralzinha-499-lr-03-momentum-09-neurons-10-20191204-140339.txt'
+            with open('./confusion_matrix/' + nome_arquivo_matriz_confusao, 'r') as arquivo_leitura:
+                cabecalho = arquivo_leitura.readline()
+                cabecalho = cabecalho.split('\n')[0].lstrip().split(' ') # Le o cabecalho removendo espaços
+                arquivo_leitura.readline()
+                for line in arquivo_leitura:
+                    linha = line.split('|')[1].lstrip().split('\n')[0].split(' ') # le linha removendo | espacos e fim de linha
+                    linhas.append(linha)
+                # print(linhas)
+                # print()
+                # input()
+                # exit()
         false_positives = []
         true_positives = []
         true_negatives = []
@@ -317,14 +332,7 @@ if(settings.somente_treina==False):
                 if(linha != coluna):
                     fp+=int(linhas[linha][coluna])
             false_positives.append(fp)
-        for linha in range(len(linhas)):
-            tn = 0
-            for linha_2 in range(len(linhas[linha])):
-                for coluna_2 in range(len(linhas[linha])):
-                    if(linha_2 != linha and coluna_2 != linha):
-                        tn+=int(linhas[linha_2][coluna_2])
-            true_negatives.append(tn)
-
+        
         false_negatives = []
         for linha in range(len(linhas)):
             fn = 0
@@ -333,6 +341,17 @@ if(settings.somente_treina==False):
                 if(linha != coluna):
                     fn+=int(linhas[linha][coluna])
             false_negatives.append(fn)
+
+        soma_total = 0
+        for i in range(len(linhas)):
+            soma_total += sum([int(numero) for numero in linhas[i]])
+        
+        for linha in range(len(linhas)):
+            soma_valor = false_negatives[linha] + false_positives[linha] + true_positives[linha]
+            tn = soma_total - soma_valor
+            true_negatives.append(tn)
+
+        
         for i in range(len(linhas)):
             if((int(true_positives[i])+int(false_negatives[i]))==0):
                 sensitividades.append(0)    
@@ -340,19 +359,23 @@ if(settings.somente_treina==False):
                 sensitividades.append(int(true_positives[i])/(int(true_positives[i])+int(false_negatives[i])))
             if((int(false_positives[i])+int(true_negatives[i]))==0):
                 fprs.append(0)
+                especificidades.append(0)
             else:
                 fprs.append(int(false_positives[i])/(int(false_positives[i])+int(true_negatives[i])))
+                especificidades.append(int(true_negatives[i])/(int(true_negatives[i])+int(false_positives[i])))
             tprs.append(sensitividades[-1])
             
             precisoes.append(int(true_positives[i])/(int(true_positives[i])+int(false_positives[i])))
-            especificidades.append(int(true_negatives[i])/(int(true_negatives[i])+int(false_positives[i])))
+            
         
         tprs_grafico, fprs_grafico =  (list(t) for t in zip(*sorted(zip(tprs, fprs))))
         
         # print(false_positives)
         # print(false_negatives)
         # print(true_positives)
+        # print("TN")
         # print(true_negatives)
+        # input()
         # print("Sensitividades")
         # print(sensitividades)
         # print("Precisões")
@@ -365,8 +388,12 @@ if(settings.somente_treina==False):
         # print(fprs)
         # acuracia = (VP+VN)/(VP+FP+VN+FN)
         acuracia = (sum(true_positives)+sum(true_negatives))/(sum(true_positives)+sum(false_positives)+sum(true_negatives)+sum(false_negatives))
-        erro = 1 - acuracia
         # print("Acuracia")
+        # print(acuracia)
+        # input()
+        # exit()
+        erro = 1 - acuracia
+        
         # print(acuracia)
         # print("Erro")
         # print(erro)
