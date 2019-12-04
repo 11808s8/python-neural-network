@@ -1,4 +1,5 @@
 import random
+import settings
 
 ''' Script que lê  um arquivo com as entradas codificadas e gera o 
     dataset de teste com base no arquivo lido.
@@ -24,11 +25,11 @@ def funcao_escreve_arquivo_novo_sem_letra_identificando():
 def monta_dataset_teste():
     todos_caracteres = []
     bits = None
-    with open('novoarquivo_com_saida1.txt') as novoarquivo:
+    with open(nome_arquivo_treino) as novoarquivo:
         for linha in novoarquivo:
             todos_caracteres.append(linha.replace('\n',''))
 
-        with open('dataset_teste.txt','w') as dt:
+        with open(arquivo_teste,'w') as dt:
             entradas = random.sample(todos_caracteres,34)
             for entrada in entradas:
                 dt.write(entrada + '\n')
@@ -40,7 +41,7 @@ def monta_dataset_teste():
         
         lista_bits = [bits[i] for i in range(len(bits))]
 
-        with open('dataset_teste.txt','a') as dt:
+        with open(arquivo_teste,'a') as dt:
             dt.write(quantos_inverte(2,lista_bits) + '\n')
 
     #6% de ruído
@@ -49,7 +50,7 @@ def monta_dataset_teste():
         
         lista_bits = [bits[i] for i in range(len(bits))]
 
-        with open('dataset_teste.txt','a') as dt:
+        with open(arquivo_teste,'a') as dt:
             dt.write(quantos_inverte(6,lista_bits) + '\n')
 
     #12% de ruído
@@ -58,7 +59,7 @@ def monta_dataset_teste():
         
         lista_bits = [bits[i] for i in range(len(bits))]
 
-        with open('dataset_teste.txt','a') as dt:
+        with open(arquivo_teste,'a') as dt:
             dt.write(quantos_inverte(12,lista_bits) + '\n')
 
 

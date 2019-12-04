@@ -2,8 +2,8 @@ from camada import Camada
 from camada_saida import CamadaSaida
 from neuronio import Neuronio
 import settings
+import utils
 import json
-import time
 
 import matplotlib.pyplot as plt
 
@@ -53,7 +53,7 @@ def backup_weights_on_file(camadas, tipo_camadas, nome_arquivo_backup):
 
 def read_weights_on_file(nome_arquivo_backup):
     with open(nome_arquivo_backup,'r') as arquivo_backup:
-        print("leitura")
+        # print("leitura")
         camadas = []
         json_deserializacao = json.load(arquivo_backup)
         for indice_camada in range(len(json_deserializacao)):
@@ -64,49 +64,46 @@ def read_weights_on_file(nome_arquivo_backup):
             else:
                 nova_camada = Camada(json_deserializacao[indice_camada]['total_neuronios'])
             for neuronio in json_deserializacao[indice_camada]['neuronios']:
-                novo_neuronio = Neuronio(neuronio['id'],[],settings.taxa_aprendizagem, settings.momentum)
+                novo_neuronio = Neuronio(neuronio['id'],[],1, settings.momentum)
                 for i in range(len(neuronio['entradas'])):
-                    novo_neuronio.entradas.append(Neuronio(neuronio['entradas'][i]['id'],[],settings.taxa_aprendizagem, settings.momentum))
+                    novo_neuronio.entradas.append(Neuronio(neuronio['entradas'][i]['id'],[],1, settings.momentum))
                     novo_neuronio.pesos.append(neuronio['entradas'][i]['peso'])
                 nova_camada.neuronios.append(novo_neuronio)
             camadas.append(nova_camada)
         
         return camadas
 
-epocas = 1000
+epocas = settings.quantidade_epocas
 
-nome_arquivo_leitura = 'novoarquivo_com_saida1.txt'
+nome_arquivo_leitura = settings.nome_arquivo_treino 
 
-
-
-settings.quantidade_neuronios_camada_saida = 36
-settings.quantidade_neuronios_camada_entrada = 48
-
-taxas_aprendizagem = [0.1, 0.3, 0.6, 1]
-quantidades_neuronio_camada_escondida = [ 10, 20, 30]
 
 total_linhas_arquivo_treino = conta_linhas_arquivo(nome_arquivo_leitura)
 
 
-for indice_array_neuronios_camada_escondida in  range(len(quantidades_neuronio_camada_escondida)):
-    for indice_array_taxas_aprendizagem in range(len(taxas_aprendizagem)):
+for indice_array_neuronios_camada_escondida in  range(len(settings.quantidades_neuronio_camada_escondida)):
+    for indice_array_taxas_aprendizagem in range(len(settings.taxas_aprendizagem)):
         checkpoint_counter = 1 
 
-        settings.taxa_aprendizagem = taxas_aprendizagem[indice_array_taxas_aprendizagem]
+        taxa_aprendizagem = settings.taxas_aprendizagem[indice_array_taxas_aprendizagem]
         settings.ultimo_id_neuronio = 0 
-        settings.quantidade_neuronios_camada_escondida = quantidades_neuronio_camada_escondida[indice_array_neuronios_camada_escondida]
+        settings.quantidade_neuronios_camada_escondida = settings.quantidades_neuronio_camada_escondida[indice_array_neuronios_camada_escondida]
 
         linha_arquivo_treino = 0
         i=0
+
+        # Carrega os pesos do arquivo .nn de backup, para treinar mais :D
         if(settings.le_de_arquivo==True):
-            # nome_arquivo_backup_pesos = 'backup-rede-neuralzinha-2248-lr-01.nn'
+            
             nome_arquivo_backup_pesos = settings.nome_arquivo_backup_pesos
 
             camadas = read_weights_on_file(nome_arquivo_backup_pesos)
+            # Definição das camadas
             camada_entrada = Camada(settings.quantidade_neuronios_camada_entrada)
             camada_escondida = camadas[0]
             camada_saida = camadas[1]
-            camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio, settings.taxa_aprendizagem, settings.momentum)
+
+            camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio, taxa_aprendizagem, settings.momentum)
             camada_escondida.atualiza_neuronios(camada_entrada.neuronios)
             nome_arquivo_backup_pesos_split = nome_arquivo_backup_pesos.split('-')
             
@@ -115,7 +112,7 @@ for indice_array_neuronios_camada_escondida in  range(len(quantidades_neuronio_c
             
             camada_entrada = Camada(settings.quantidade_neuronios_camada_entrada)
 
-            settings.ultimo_id_neuronio = camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio, settings.taxa_aprendizagem, settings.momentum)
+            settings.ultimo_id_neuronio = camada_entrada.le_camada_entrada(nome_arquivo_leitura,1, settings.ultimo_id_neuronio, taxa_aprendizagem, settings.momentum)
 
             quantos_neuronios_camada_escondida = settings.quantidade_neuronios_camada_escondida
 
@@ -128,7 +125,7 @@ for indice_array_neuronios_camada_escondida in  range(len(quantidades_neuronio_c
             
             # LEITURA DA CAMADA ESCONDIDA
             for indice_neuronio_escondido in range(quantos_neuronios_camada_escondida):
-                neuronio_novo = Neuronio(settings.ultimo_id_neuronio,[],settings.taxa_aprendizagem, settings.momentum)
+                neuronio_novo = Neuronio(settings.ultimo_id_neuronio,[],taxa_aprendizagem, settings.momentum)
 
                 neuronio_novo.entradas = [ neuronio for neuronio in camada_entrada.neuronios ]
                 neuronio_novo.pesos = [ camada_escondida.__gera_peso_aleatorio__() for neuronio in camada_entrada.neuronios ]
@@ -138,7 +135,7 @@ for indice_array_neuronios_camada_escondida in  range(len(quantidades_neuronio_c
 
             # LEITURA DA CAMADA DE SAÍDA
             for _ in range(quantos_neuronios_camada_saida):
-                    neuronio_novo = Neuronio(settings.ultimo_id_neuronio, [],settings.taxa_aprendizagem, settings.momentum)
+                    neuronio_novo = Neuronio(settings.ultimo_id_neuronio, [],taxa_aprendizagem, settings.momentum)
                     for neuronio in camada_escondida.neuronios:
                             neuronio_novo.entradas.append(neuronio)
                             neuronio_novo.pesos.append(camada_saida.__gera_peso_aleatorio__())
@@ -146,17 +143,17 @@ for indice_array_neuronios_camada_escondida in  range(len(quantidades_neuronio_c
                     camada_saida.neuronios.append(neuronio_novo)
                     settings.ultimo_id_neuronio += 1
 
-        print('Rodando treinamento para')
-        print('taxa de aprendizagem: ' + str(settings.taxa_aprendizagem))
-        print('neuronios camada escondida: ' + str(settings.quantidade_neuronios_camada_escondida))
+        
+        
         settings.ultimo_id_neuronio = 0 
         
 
         # TREINAMENTO EM ORDEM DO PDF...
         if(settings.somente_testa == False):
+            print('Rodando treinamento para taxa de aprendizagem: ' + str(taxa_aprendizagem) + 'neuronios camada escondida: ' + str(settings.quantidade_neuronios_camada_escondida))
             while(i <epocas):
                 if(checkpoint_counter % settings.quanto_em_quanto_faz_checkpoint == 0):
-                    nome_arquivo_backup = settings.gera_nome_arquivo_backup(i)
+                    nome_arquivo_backup = utils.gera_nome_arquivo_backup(i)
                     backup_weights_on_file([camada_escondida, camada_saida], ['hidden', 'output'], nome_arquivo_backup)
 
                 for linha_arquivo_treino in range(total_linhas_arquivo_treino):
@@ -188,271 +185,247 @@ for indice_array_neuronios_camada_escondida in  range(len(quantidades_neuronio_c
 
                 checkpoint_counter += 1
 
-
-                print("Rodou época " + str(i))
+                if(i%10==0):
+                    print("Rodou época " + str(i))
                 i+=1
+        else:
+            break
+    if(settings.somente_testa):
+        break
+    print("Execução finalizada")
 
+if(settings.somente_treina==False):
 
+    arquivo_teste = settings.arquivo_teste
+    #arquivo_teste = 'teste_dataset_2_entradas.txt'
 
-arquivo_teste = 'dataset_teste.txt'
-#arquivo_teste = 'teste_dataset_2_entradas.txt'
+    tamanho_arquivo_teste = conta_linhas_arquivo(arquivo_teste)
 
-tamanho_arquivo_teste = conta_linhas_arquivo(arquivo_teste)
+    quantos_reconheceu = 0
+    quantos_nao_reconheceu = 0
 
-quantos_reconheceu = 0
-quantos_nao_reconheceu = 0
+    classes = {}
 
-classes = {}
-
-with open(nome_arquivo_leitura, 'r') as arquivo_treino:
-    for linha in arquivo_treino:
-        linha_quebrada = linha.split(' ')
-        classes[linha_quebrada[1]] = { 'id' : linha_quebrada[2].replace('\n',''), 'quanto_reconheceu' : 0}
+    with open(nome_arquivo_leitura, 'r') as arquivo_treino:
+        for linha in arquivo_treino:
+            linha_quebrada = linha.split(' ')
+            classes[linha_quebrada[1]] = { 'id' : linha_quebrada[2].replace('\n',''), 'quanto_reconheceu' : 0}
+            
+    # print(classes)
+    classes_avaliacao = {}
+    for classe in classes:
         
-print(classes)
-classes_avaliacao = {}
-for classe in classes:
-    # classes_avaliacao[] = {'id': classe['id'], 'avaliacao':{}}
-    # print(classes[classe])
-    # exit()
-    classes_avaliacao[classe] = {}
-    classes_avaliacao[classe]['id'] = classes[classe]['id']
-    classes_avaliacao[classe]['avaliacao'] = {}
-    for classe_interna in classes:
-        classes_avaliacao[classe]['avaliacao'][classe_interna] = 0 
-        # classes_avaliacao[classe]['avaliacao']['quanto_reconheceu'] =  0
-    # for classe_interna in classes_avaliacao:
-    # print(json.dumps(classes_avaliacao[classe], indent=4))
-    # input()
+        classes_avaliacao[classe] = {}
+        classes_avaliacao[classe]['id'] = classes[classe]['id']
+        classes_avaliacao[classe]['avaliacao'] = {}
+        for classe_interna in classes:
+            classes_avaliacao[classe]['avaliacao'][classe_interna] = 0 
+            
+            
+    for i in range(tamanho_arquivo_teste):
+        camada_entrada.le_entrada(arquivo_teste,1,i)
+        camada_saida.le_saida_esperada(arquivo_teste, 1, i)
+        camada_escondida.atualiza_neuronios(camada_entrada.neuronios)
+        
+        camada_escondida.update_saida()
 
-# print(classes_avaliacao)
-# print(json.dumps(classes_avaliacao, indent=4))
-# exit()
-for i in range(tamanho_arquivo_teste):
-    camada_entrada.le_entrada(arquivo_teste,1,i)
-    camada_saida.le_saida_esperada(arquivo_teste, 1, i)
-    camada_escondida.atualiza_neuronios(camada_entrada.neuronios)
-    
-    camada_escondida.update_saida()
+        # camada_escondida.atualiza_neuronios(camada_escondida.neuronios)
+        camada_saida.atualiza_neuronios(camada_escondida.neuronios)
 
-    # camada_escondida.atualiza_neuronios(camada_escondida.neuronios)
-    camada_saida.atualiza_neuronios(camada_escondida.neuronios)
+        # Calcula as saídas das camadas de saída
 
-    # Calcula as saídas das camadas de saída
-
-    camada_saida.update_saida()
-    
-    saida_formatada = camada_saida.retorna_saida_neuronios_formatada()
-    saida_esperada_formatada = camada_saida.retorna_saida_esperada_formatada()
-    if(saida_esperada_formatada in classes):
-        print("Classe!")
-        print(classes_avaliacao[saida_formatada]['id'])
-        # classes_avaliacao[saida_esperada_formatada]['avaliacao'][saida_formatada]+=1
-        classes_avaliacao[saida_formatada]['avaliacao'][saida_esperada_formatada]+=1
-        print(classes_avaliacao[saida_esperada_formatada]['avaliacao'][saida_formatada])
+        camada_saida.update_saida()
+        
+        saida_formatada = camada_saida.retorna_saida_neuronios_formatada()
+        saida_esperada_formatada = camada_saida.retorna_saida_esperada_formatada()
+        if(saida_esperada_formatada in classes):
+            print("Classe!")
+            print(classes_avaliacao[saida_formatada]['id'])
+            # classes_avaliacao[saida_esperada_formatada]['avaliacao'][saida_formatada]+=1
+            classes_avaliacao[saida_formatada]['avaliacao'][saida_esperada_formatada]+=1
+            print(classes_avaliacao[saida_esperada_formatada]['avaliacao'][saida_formatada])
+            # input()
+        print("Saída do teste")
+        camada_saida.print_saida_neuronios()
+        print("Saída esperada")
+        camada_saida.print_saida_esperada_neuronios()
+        if(camada_saida.reconheceu_saida()):
+            quantos_reconheceu+=1
+        else:
+            quantos_nao_reconheceu +=1
         # input()
-    print("Saída do teste")
-    camada_saida.print_saida_neuronios()
-    print("Saída esperada")
-    camada_saida.print_saida_esperada_neuronios()
-    if(camada_saida.reconheceu_saida()):
-        quantos_reconheceu+=1
-    else:
-        quantos_nao_reconheceu +=1
-    # input()
 
-cabecalho = []
+    if(settings.gera_graficos):
+        cabecalho = []
 
-cabecalho = [ classes_avaliacao[classe]['id'] for classe in classes_avaliacao ]
-cabecalho.sort()
-
-# input()
-# print(cabecalho)
-# input()
-linhas = []
-for classe in classes_avaliacao:
-    linhas.append([])
-    for classe_interna in classes_avaliacao:
-        linhas[len(linhas)-1].append(str(classes_avaliacao[classe]['avaliacao'][classe_interna]))
-# print()
-
-with open('matriz_confusao.txt', 'w') as arquivo_escrita:
-    arquivo_escrita.write('    ' + ' '.join(cabecalho) + '\n')
-    arquivo_escrita.write('    ' + ' '.join([ '-' for i in range(len(cabecalho))]) + '\n')
-    pass
-
-i = 0
-for linha in linhas:
-    linha_formatada = str(cabecalho[i]) + ' | ' + ' '.join(linha)  + '\n'
-    i += 1
-    with open('matriz_confusao.txt', 'a') as arquivo_escrita:
-        arquivo_escrita.write(linha_formatada)
+        cabecalho = [ classes_avaliacao[classe]['id'] for classe in classes_avaliacao ]
+        # cabecalho.sort()
+        print(cabecalho)
+        print()
+        linhas = []
+        cabecalhos = []
+        for classe in classes_avaliacao:
+            linhas.append([])
+            cabecalhos.append([])
+            for classe_interna in classes_avaliacao:
+                linhas[len(linhas)-1].append(str(classes_avaliacao[classe]['avaliacao'][classe_interna]))
+                cabecalhos[len(linhas)-1].append(str(classes_avaliacao[classe_interna]['id']))
 
 
-false_positives = []
-true_positives = []
-true_negatives = []
-sensitividades = []
-fprs = []
-tprs = []
-precisoes = []
-especificidades = []
-ja_foram = []
-for linha in range(len(linhas)):
-    
-    fp = 0
-    
-    for coluna in range(len(linhas[linha])):
+            # print(cabecalhos)
+        for i in range(len(linhas)):
+            # for j in range(len(linhas[i])):
+            cabecalhos[i], linhas[i] =  (list(t) for t in zip(*sorted(zip(cabecalhos[i], linhas[i]))))
+        cabecalho, linhas =  (list(t) for t in zip(*sorted(zip(cabecalho, linhas))))
+        print(cabecalho)
+        # print(linhas[-1])
+        input()
+        # print()
+        # cabecalho, linhas =  (list(t) for t in zip(*sorted(zip(cabecalho, linhas))))
+
+        with open(settings.arquivo_matriz_confusao, 'w') as arquivo_escrita:
+            arquivo_escrita.write('    ' + ' '.join(cabecalho) + '\n')
+            arquivo_escrita.write('    ' + ' '.join([ '-' for i in range(len(cabecalho))]) + '\n')
+            pass
+
+        i = 0
+        for linha in linhas:
+            linha_formatada = str(cabecalho[i]) + ' | ' + ' '.join(linha)  + '\n'
+            i += 1
+            with open(settings.arquivo_matriz_confusao, 'a') as arquivo_escrita:
+                arquivo_escrita.write(linha_formatada)
+
+
+        false_positives = []
+        true_positives = []
+        true_negatives = []
+        sensitividades = []
+        fprs = []
+        tprs = []
+        precisoes = []
+        especificidades = []
+        ja_foram = []
+        for linha in range(len(linhas)):
+            for coluna in range(len(linhas[linha])):
+                if(linha == coluna):
+                    true_positives.append(int(linhas[linha][coluna]))
+                    
+
+        for coluna in range(len(linhas)):
+            fp = 0
+            for linha in range(len(linhas[coluna])):
+                if(linha != coluna):
+                    fp+=int(linhas[linha][coluna])
+            false_positives.append(fp)
+        for linha in range(len(linhas)):
+            tn = 0
+            for linha_2 in range(len(linhas[linha])):
+                for coluna_2 in range(len(linhas[linha])):
+                    if(linha_2 != linha and coluna_2 != linha):
+                        tn+=int(linhas[linha_2][coluna_2])
+            true_negatives.append(tn)
+
+        false_negatives = []
+        for linha in range(len(linhas)):
+            fn = 0
+            
+            for coluna in range(len(linhas[coluna])):
+                if(linha != coluna):
+                    fn+=int(linhas[linha][coluna])
+            false_negatives.append(fn)
+        for i in range(len(linhas)):
+            if((int(true_positives[i])+int(false_negatives[i]))==0):
+                sensitividades.append(0)    
+            else:
+                sensitividades.append(int(true_positives[i])/(int(true_positives[i])+int(false_negatives[i])))
+            if((int(false_positives[i])+int(true_negatives[i]))==0):
+                fprs.append(0)
+            else:
+                fprs.append(int(false_positives[i])/(int(false_positives[i])+int(true_negatives[i])))
+            tprs.append(sensitividades[-1])
+            
+            precisoes.append(int(true_positives[i])/(int(true_positives[i])+int(false_positives[i])))
+            especificidades.append(int(true_negatives[i])/(int(true_negatives[i])+int(false_positives[i])))
         
-            # ja_foram.append((linha, coluna))
-        if(linha == coluna):
-            true_positives.append(int(linhas[linha][coluna]))
-            # ja_foram.append((linha, coluna))
-        #     tn = 0
-        #     for i in range(len(linhas)):
-        #         if(linha != i and coluna != i):
-        #             tn+=int(linhas[i][i])
-        #     true_negatives.append(tn)
+        tprs_grafico, fprs_grafico =  (list(t) for t in zip(*sorted(zip(tprs, fprs))))
+        
+        # print(false_positives)
+        # print(false_negatives)
+        # print(true_positives)
+        # print(true_negatives)
+        # print("Sensitividades")
+        # print(sensitividades)
+        # print("Precisões")
+        # print(precisoes)
+        # print("Especificidades")
+        # print(especificidades)
+        # print("TPRS")
+        # print(tprs)
+        # print("FPRS")
+        # print(fprs)
+        # acuracia = (VP+VN)/(VP+FP+VN+FN)
+        acuracia = (sum(true_positives)+sum(true_negatives))/(sum(true_positives)+sum(false_positives)+sum(true_negatives)+sum(false_negatives))
+        erro = 1 - acuracia
+        # print("Acuracia")
+        # print(acuracia)
+        # print("Erro")
+        # print(erro)
+        
+        print("\n Gravando arquivo com dados de análise:")
+        with open(settings.arquivo_dados_gerados,'w') as arquivo_gerado:
+            arquivo_gerado.write("Cabecalho            : " + utils.converte_lista_string(cabecalho))
+            arquivo_gerado.write("\nVerdadeiros positivos: " + utils.converte_lista_string(true_positives))
+            arquivo_gerado.write("\nVerdadeiros negativos: " + utils.converte_lista_string(true_negatives))
+            arquivo_gerado.write("\nFalsos negativos     : " + utils.converte_lista_string(false_negatives))
+            arquivo_gerado.write("\nFalsos positivos     : " + utils.converte_lista_string(false_positives))
+            arquivo_gerado.write("\nSensitividades       : " + utils.converte_lista_string(sensitividades))
+            arquivo_gerado.write("\nEspecificidades      : " + utils.converte_lista_string(especificidades))
+            arquivo_gerado.write("\nPrecisões            : " + utils.converte_lista_string(precisoes))
+            arquivo_gerado.write("\nTrue Positive Rates  : " + utils.converte_lista_string(tprs))
+            arquivo_gerado.write("\nFalse Positive Rates : " + utils.converte_lista_string(fprs))
+            arquivo_gerado.write("\nAcurácia             : " + str(acuracia))
+            arquivo_gerado.write("\nErro                 : " + str(erro))
 
-    # if(linha == coluna):
-        # true_positives.append(int(linhas[linha][coluna]))
-        # tn = 0
-        # for i in range(len(linhas)):
-        #     if(linha != i and coluna != i):
-        #         tn+=int(linhas[i][i])
-        # true_negatives.append(tn)
+        print("\n Arquivo de análise gerado!")
+        print("\n Gravando Figura com dados de análise:")
+        fig,((ax1, ax2),(ax3,ax4),(ax5,ax6),(ax7,ax8), (ax9, ax10)) = plt.subplots(5, 2)
+        ax1.bar(cabecalho, sensitividades, align='center', alpha=0.5)
+        ax2.bar(cabecalho, precisoes, align='center', alpha=0.5)
+        ax3.bar(cabecalho, especificidades, align='center', alpha=0.5)
+        ax4.bar(cabecalho, fprs, align='center', alpha=0.5)
+        ax5.bar(cabecalho, tprs, align='center', alpha=0.5)
+        ax6.bar(cabecalho, false_positives, align='center', alpha=0.5)
+        ax7.bar(cabecalho, false_negatives, align='center', alpha=0.5)
+        ax8.bar(cabecalho, true_positives, align='center', alpha=0.5)
+        ax9.bar(cabecalho, true_negatives, align='center', alpha=0.5)
+        ax10.plot(fprs_grafico,tprs_grafico)
+        ax1.xaxis.labelpad = 4
+        ax2.xaxis.labelpad = 4
+        # plt.xticks(y_pos, cabecalho,rotation='vertical')
+        # ax1.xticks(y_pos, cabecalho)
+        # ax1.ylabel('Sensitividade')
+        ax1.set_title('Sensitividades')
+        ax2.set_title('Precisões')
+        ax3.set_title('Especificidades')
+        ax4.set_title('False Positive Rates')
+        ax5.set_title('True Positive Rates')
+        ax6.set_title('False Positives')
+        ax7.set_title('False Negatives')
+        ax8.set_title('True Positives')
+        ax9.set_title('True Negatives')
+        ax10.set_title('ROC Curve')
+        fig.add_subplot(ax1)
+        fig.add_subplot(ax2)
+        fig.add_subplot(ax3)
+        fig.add_subplot(ax4)
+        fig.add_subplot(ax5)
+        fig.add_subplot(ax6)
+        fig.add_subplot(ax7)
+        fig.add_subplot(ax8)
+        fig.add_subplot(ax9)
+        fig.add_subplot(ax10)
+        fig.set_size_inches(12,20)
 
-    # false_positives.append(fp)
-    # print("Falso positivo primeiro bobao")
-    # print(fp)
-    # input()
+        fig.savefig(settings.destino_figura)
 
-for coluna in range(len(linhas)):
-    fp = 0
-    for linha in range(len(linhas[coluna])):
-        if(linha != coluna):
-            fp+=int(linhas[linha][coluna])
-    false_positives.append(fp)
-for linha in range(len(linhas)):
-
-    # for coluna in range(len(linhas[linha])):
-    tn = 0
-    for linha_2 in range(len(linhas[linha])):
-        for coluna_2 in range(len(linhas[linha])):
-            if(linha_2 != linha and coluna_2 != linha):
-                tn+=int(linhas[linha_2][coluna_2])
-        # if(linha!=coluna):
-    true_negatives.append(tn)
-
-# print(true_negatives)
-# input()
-false_negatives = []
-for linha in range(len(linhas)):
-    fn = 0
-    
-    for coluna in range(len(linhas[coluna])):
-        if(linha != coluna):
-            fn+=int(linhas[linha][coluna])
-    false_negatives.append(fn)
-for i in range(len(linhas)):
-    # print(cabecalho[i])
-    # print(str((int(true_positives[i]))))
-    # print(str(int(false_negatives[i])))
-    # input()
-    if((int(true_positives[i])+int(false_negatives[i]))==0):
-        sensitividades.append(0)    
-    else:
-        sensitividades.append(int(true_positives[i])/(int(true_positives[i])+int(false_negatives[i])))
-    if((int(false_positives[i])+int(true_negatives[i]))==0):
-        fprs.append(0)
-    else:
-        fprs.append(int(false_positives[i])/(int(false_positives[i])+int(true_negatives[i])))
-    tprs.append(sensitividades[-1])
-    
-    precisoes.append(int(true_positives[i])/(int(true_positives[i])+int(false_positives[i])))
-    especificidades.append(int(true_negatives[i])/(int(true_negatives[i])+int(false_positives[i])))
-    # fprs.append(especificidades[-1])
-# print(tprs)
-# print(fprs)
-tprs_grafico, fprs_grafico =  (list(t) for t in zip(*sorted(zip(tprs, fprs))))
-# print(tprs)
-# print(fprs)
-# input()
-print(false_positives)
-print(false_negatives)
-print(true_positives)
-print(true_negatives)
-print("Sensitividades")
-print(sensitividades)
-print("Precisões")
-print(precisoes)
-print("Especificidades")
-print(especificidades)
-print("TPRS")
-print(tprs)
-print("FPRS")
-print(fprs)
-# acuracia = (VP+VN)/(VP+FP+VN+FN)
-acuracia = (sum(true_positives)+sum(true_negatives))/(sum(true_positives)+sum(false_positives)+sum(true_negatives)+sum(false_negatives))
-erro = 1 - acuracia
-print("Acuracia")
-print(acuracia)
-print("Erro")
-print(erro)
-# precisao = (quantos_reconheceu/(quantos_reconheceu+quantos_nao_reconheceu)) * 100
-# print("Precisão")
-# print(precisao)
-
-# y_pos = np.arange(len(cabecalho))
-# performance = [10,8,6,4,2,1]
-
-# plt.plot(fpr,tpr,label="data 1, auc="+str(auc))
-# plt.legend(loc=4)
-# plt.show()
-
-
-fig,((ax1, ax2),(ax3,ax4),(ax5,ax6),(ax7,ax8), (ax9, ax10)) = plt.subplots(5, 2)
-ax1.bar(cabecalho, sensitividades, align='center', alpha=0.5)
-ax2.bar(cabecalho, precisoes, align='center', alpha=0.5)
-ax3.bar(cabecalho, especificidades, align='center', alpha=0.5)
-ax4.bar(cabecalho, fprs, align='center', alpha=0.5)
-ax5.bar(cabecalho, tprs, align='center', alpha=0.5)
-ax6.bar(cabecalho, false_positives, align='center', alpha=0.5)
-ax7.bar(cabecalho, false_negatives, align='center', alpha=0.5)
-ax8.bar(cabecalho, true_positives, align='center', alpha=0.5)
-ax9.bar(cabecalho, true_negatives, align='center', alpha=0.5)
-ax10.plot(fprs_grafico,tprs_grafico)
-ax1.xaxis.labelpad = 4
-ax2.xaxis.labelpad = 4
-# plt.xticks(y_pos, cabecalho,rotation='vertical')
-# ax1.xticks(y_pos, cabecalho)
-# ax1.ylabel('Sensitividade')
-ax1.set_title('Sensitividades')
-ax2.set_title('Precisões')
-ax3.set_title('Especificidades')
-ax4.set_title('False Positive Rates')
-ax5.set_title('True Positive Rates')
-ax6.set_title('False Positives')
-ax7.set_title('False Negatives')
-ax8.set_title('True Positives')
-ax9.set_title('True Negatives')
-ax10.set_title('ROC Curve')
-fig.add_subplot(ax1)
-fig.add_subplot(ax2)
-fig.add_subplot(ax3)
-fig.add_subplot(ax4)
-fig.add_subplot(ax5)
-fig.add_subplot(ax6)
-fig.add_subplot(ax7)
-fig.add_subplot(ax8)
-fig.add_subplot(ax9)
-fig.add_subplot(ax10)
-fig.set_size_inches(12,20)
-
-nome_figura = 'output/images/' + settings.nome_arquivo_backup_pesos_sem_extensao + time.strftime("%Y%m%d-%H%M%S") + '.png'
-fig.savefig(nome_figura)
-# fig = plt.gcf()
-# matplotlib.pypl
-# ot.show()
-# plt.subplots_adjust(hspace=0.41,top=0.94,bottom=0.05)
-# plt.show(block=True)
+        print("\n Figura de análise gerada!")
